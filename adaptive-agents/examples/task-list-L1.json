@@ -1,0 +1,32 @@
+{
+  "list_id": "A01-L1",
+  "agent_id": "A01",
+  "agent_name": "Zorro-01",
+  "project_id": "P-438b8e",
+  "immutable": true,
+  "created_at": "2026-10-28T22:25:02.084Z",
+  "tasks": [
+    {
+      "id": "A01-L1-1",
+      "seq": 1,
+      "master_id": "T-001",
+      "kind": "owner_request",
+      "title": "Persist notes to a JSON file",
+      "detail": "Notes survive a restart: load on start, save on change.",
+      "acceptance": "Adding a note, restarting, and listing shows the note.",
+      "complexity": 2,
+      "status_at_creation": "todo"
+    },
+    {
+      "id": "A01-L1-2",
+      "seq": 2,
+      "master_id": null,
+      "kind": "planning",
+      "title": "Plan the next list",
+      "detail": "Follow procedures/next-task-list.md in the payload folder.",
+      "acceptance": "A new list exists for this agent, or the agent is retired with a stated reason.",
+      "complexity": 3,
+      "status_at_creation": "todo"
+    }
+  ]
+}

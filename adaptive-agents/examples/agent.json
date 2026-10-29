@@ -1,0 +1,18 @@
+{
+  "id": "A01",
+  "name": "Zorro-01",
+  "role": "worker",
+  "categories": [
+    "C1"
+  ],
+  "lane": "Owns src/store.js and the data file.",
+  "persona": "A careful storage engineer who never loses data.",
+  "provider": "claude",
+  "model": null,
+  "resources": [
+    "docs/plans/backtrace.md"
+  ],
+  "folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Zorro-01",
+  "project_id": "P-438b8e",
+  "created_at": "2026-10-28T22:25:02.077Z"
+}

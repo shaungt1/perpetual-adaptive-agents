@@ -1,0 +1,174 @@
+{
+  "master_tasks": [
+    {
+      "id": "T-001",
+      "category": "C1",
+      "kind": "owner_request",
+      "title": "Persist notes to a JSON file",
+      "detail": "Notes survive a restart: load on start, save on change.",
+      "acceptance": "Adding a note, restarting, and listing shows the note.",
+      "complexity": 2,
+      "source": "vision: the notes must survive a restart"
+    },
+    {
+      "id": "T-002",
+      "category": "C1",
+      "kind": "owner_request",
+      "title": "Delete a note by id",
+      "detail": "remove(id) in the store.",
+      "acceptance": "remove(2) leaves the other notes intact and is saved.",
+      "complexity": 1,
+      "source": "vision: delete one"
+    },
+    {
+      "id": "T-003",
+      "category": "C2",
+      "kind": "owner_request",
+      "title": "add and list commands",
+      "detail": "notes add <text>, notes list.",
+      "acceptance": "Both commands work from a terminal.",
+      "complexity": 2,
+      "source": "vision: add a note, list my notes"
+    },
+    {
+      "id": "T-004",
+      "category": "C2",
+      "kind": "owner_request",
+      "title": "delete command",
+      "detail": "notes delete <id>.",
+      "acceptance": "The note is gone from notes list.",
+      "complexity": 1,
+      "source": "vision: delete one"
+    },
+    {
+      "id": "T-005",
+      "category": "C3",
+      "kind": "owner_request",
+      "title": "Two-minute usage guide",
+      "detail": "docs/guide.md",
+      "acceptance": "A newcomer can add, list and delete a note by following it.",
+      "complexity": 1,
+      "source": "vision: a short guide"
+    },
+    {
+      "id": "T-006",
+      "category": "C3",
+      "kind": "owner_request",
+      "title": "Command reference",
+      "detail": "docs/commands.md",
+      "acceptance": "Every command and argument is listed.",
+      "complexity": 1,
+      "source": "vision: a short guide"
+    },
+    {
+      "id": "T-007",
+      "category": "C4",
+      "kind": "owner_request",
+      "title": "Store tests",
+      "detail": "test/store.test.js",
+      "acceptance": "Tests cover add, persist, delete.",
+      "complexity": 2,
+      "source": "vision: well tested"
+    },
+    {
+      "id": "T-008",
+      "category": "C4",
+      "kind": "owner_request",
+      "title": "Command-line tests",
+      "detail": "test/cli.test.js",
+      "acceptance": "Tests cover add, list, delete.",
+      "complexity": 2,
+      "source": "vision: well tested"
+    }
+  ],
+  "agents": [
+    {
+      "categories": [
+        "C1"
+      ],
+      "lane": "Owns src/store.js and the data file.",
+      "persona": "A careful storage engineer who never loses data.",
+      "tasks": [
+        "T-001",
+        "T-002"
+      ]
+    },
+    {
+      "categories": [
+        "C2"
+      ],
+      "lane": "Owns src/cli.js.",
+      "persona": "A command-line tool designer who values short, predictable commands.",
+      "tasks": [
+        "T-003",
+        "T-004"
+      ]
+    },
+    {
+      "categories": [
+        "C3"
+      ],
+      "lane": "Owns docs/.",
+      "persona": "A technical writer who writes for first-time users.",
+      "tasks": [
+        "T-005",
+        "T-006"
+      ]
+    },
+    {
+      "categories": [
+        "C4"
+      ],
+      "lane": "Owns test/.",
+      "persona": "A test engineer who writes small, fast, independent tests.",
+      "tasks": [
+        "T-007",
+        "T-008"
+      ]
+    }
+  ],
+  "planner": {},
+  "departments": [
+    {
+      "id": "C1",
+      "name": "Storage",
+      "scope": "Saving, loading and deleting notes for the notes-lite tool.",
+      "owns": [
+        "src/store.js",
+        "data/"
+      ],
+      "out_of_scope": "Files owned by the other departments; changes there go through the board.",
+      "done_definition": "Each task meets its acceptance criteria, is merged to main, and the tests pass on main."
+    },
+    {
+      "id": "C2",
+      "name": "Command line",
+      "scope": "The notes command and its sub-commands for the notes-lite tool.",
+      "owns": [
+        "src/cli.js"
+      ],
+      "out_of_scope": "Files owned by the other departments; changes there go through the board.",
+      "done_definition": "Each task meets its acceptance criteria, is merged to main, and the tests pass on main."
+    },
+    {
+      "id": "C3",
+      "name": "Guide",
+      "scope": "User documentation for the notes-lite tool.",
+      "owns": [
+        "docs/"
+      ],
+      "out_of_scope": "Files owned by the other departments; changes there go through the board.",
+      "done_definition": "Each task meets its acceptance criteria, is merged to main, and the tests pass on main."
+    },
+    {
+      "id": "C4",
+      "name": "Tests",
+      "scope": "Automated tests for storage and the command line for the notes-lite tool.",
+      "owns": [
+        "test/"
+      ],
+      "out_of_scope": "Files owned by the other departments; changes there go through the board.",
+      "done_definition": "Each task meets its acceptance criteria, is merged to main, and the tests pass on main."
+    }
+  ]
+}

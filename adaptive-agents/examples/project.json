@@ -1,0 +1,45 @@
+{
+  "id": "P-438b8e",
+  "name": "notes-lite",
+  "description": "A tiny command-line notes tool: add, list and delete notes that survive a restart.",
+  "kind": "code",
+  "facts": {
+    "language": "JavaScript (Node.js)",
+    "entry point": "src/cli.js",
+    "test command": "node --test"
+  },
+  "owner": {
+    "name": "the user"
+  },
+  "project_managers": [
+    {
+      "agent_id": "A00",
+      "name": "Orion-00",
+      "number": 0,
+      "provider": "claude",
+      "joined_at": "2026-10-28T22:20:00.000Z",
+      "first": true
+    }
+  ],
+  "root": "C:/Users/you/projects/notes-lite",
+  "payload": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents",
+  "plans_folder": "docs/plans",
+  "tools": [
+    "claude",
+    "codex"
+  ],
+  "main_branch": "main",
+  "test_command": "node --test",
+  "board": {
+    "channels": "pa.P-438b8e.>",
+    "board": "pa.P-438b8e.board.*",
+    "control": "pa.P-438b8e.control"
+  },
+  "service": {
+    "repo": "C:/Users/you/perpetual-adaptive-agents",
+    "home": "C:/Users/you/.perpetual-adaptive-agents",
+    "version": "0.2.0"
+  },
+  "created_at": "2026-10-28T22:19:00.000Z",
+  "updated_at": "2026-10-28T22:24:00.000Z"
+}

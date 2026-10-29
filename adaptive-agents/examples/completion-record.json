@@ -1,0 +1,27 @@
+{
+  "task_id": "A01-L1-1",
+  "agent_id": "A01",
+  "list_id": "A01-L1",
+  "master_id": "T-001",
+  "kind": "owner_request",
+  "title": "Persist notes to a JSON file",
+  "complete": true,
+  "summary": "src/store.js loads notes from data/notes.json on start and saves on every change, writing a temporary file and renaming it so a crash cannot corrupt the notes.",
+  "findings": [
+    "data/notes.json should stay out of git; added data/.gitignore."
+  ],
+  "errors": [
+    "The first version failed on a missing data folder; it now creates the folder."
+  ],
+  "files": [
+    "src/store.js",
+    "data/.gitignore"
+  ],
+  "tests": "node --test: 6 pass; restart check: notes kept",
+  "points": 1,
+  "attempts": 1,
+  "started_at": "2026-10-28T22:25:42.207Z",
+  "completed_at": "2026-10-28T22:26:15.745Z",
+  "agent_name": "Zorro-01",
+  "project_id": "P-438b8e"
+}

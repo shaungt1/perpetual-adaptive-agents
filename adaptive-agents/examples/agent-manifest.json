@@ -1,0 +1,53 @@
+{
+  "project_id": "P-438b8e",
+  "project_name": "notes-lite",
+  "project_root": "C:/Users/you/projects/notes-lite",
+  "payload": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents",
+  "generated_at": "2026-10-28T22:25:02.300Z",
+  "how_to_use": "Find your entry by number or name. Read your instructions file first; it points to your rules, your task lists and your resources. Stay in your department.",
+  "agents": [
+    {
+      "number": 0,
+      "id": "A00",
+      "name": "Orion-00",
+      "role": "supervisor",
+      "departments": [],
+      "lane": "Project manager: planning, supervision, the only one who talks to the user",
+      "persona": null,
+      "provider": "claude",
+      "model": null,
+      "status": "active",
+      "session_id": null,
+      "folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Orion-00",
+      "instructions": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Orion-00/INSTRUCTIONS.md",
+      "task_lists_folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Orion-00/lists",
+      "completed_folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Orion-00/completed",
+      "notes": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Orion-00/notes.md",
+      "resources": []
+    },
+    {
+      "number": 1,
+      "id": "A01",
+      "name": "Zorro-01",
+      "role": "worker",
+      "departments": [
+        {
+          "id": "C1",
+          "name": "Storage"
+        }
+      ],
+      "lane": "Owns src/store.js and the data file.",
+      "persona": "A careful storage engineer who never loses data.",
+      "provider": "claude",
+      "model": null,
+      "status": "active",
+      "session_id": null,
+      "folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Zorro-01",
+      "instructions": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Zorro-01/INSTRUCTIONS.md",
+      "task_lists_folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Zorro-01/lists",
+      "completed_folder": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Zorro-01/completed",
+      "notes": "C:/Users/you/projects/notes-lite/.agents/adaptive-agents/workspace/agents/Zorro-01/notes.md",
+      "resources": []
+    }
+  ]
+}

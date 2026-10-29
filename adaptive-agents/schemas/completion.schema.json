@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Completion record (written by `pa task done` to <payload>/workspace/agents/<agent name>/completed/<task id>.json). One per finished task; never edited.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "agent_id",
+    "kind",
+    "title",
+    "complete",
+    "summary",
+    "findings",
+    "errors",
+    "points",
+    "completed_at"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "agent_name": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "list_id": {
+      "type": "string"
+    },
+    "master_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kind": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "points": {
+      "type": "integer"
+    },
+    "attempts": {
+      "type": "integer"
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "complete": {
+      "const": true,
+      "description": "Always true: the record exists only for a finished task"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What the agent noticed that others should know"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Errors hit while doing the task and how they were solved"
+    }
+  }
+}

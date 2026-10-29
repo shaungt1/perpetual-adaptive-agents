@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent manifest (generated: <payload>/workspace/manifest/agent-manifest.json)",
+  "type": "object",
+  "required": [
+    "project_id",
+    "agents"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "number",
+          "id",
+          "name",
+          "role",
+          "departments",
+          "provider",
+          "folder",
+          "instructions",
+          "task_lists_folder",
+          "completed_folder"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "supervisor",
+              "worker"
+            ]
+          },
+          "lane": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "persona": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "folder": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "number": {
+            "type": "integer"
+          },
+          "departments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "task_lists_folder": {
+            "type": "string"
+          },
+          "completed_folder": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "payload": {
+      "type": "string"
+    },
+    "how_to_use": {
+      "type": "string"
+    }
+  }
+}

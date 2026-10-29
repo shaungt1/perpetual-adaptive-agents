@@ -1,0 +1,43 @@
+{
+  "list_id": "A01-L2",
+  "agent_id": "A01",
+  "agent_name": "Zorro-01",
+  "project_id": "P-438b8e",
+  "immutable": true,
+  "created_at": "2026-10-28T22:27:40.000Z",
+  "tasks": [
+    {
+      "id": "A01-L2-1",
+      "seq": 1,
+      "master_id": null,
+      "kind": "bug",
+      "title": "Lock the data file around changes",
+      "detail": "Two notes commands at the same moment can lose a note.",
+      "acceptance": "20 parallel adds keep all 20 notes.",
+      "complexity": 2,
+      "status_at_creation": "todo"
+    },
+    {
+      "id": "A01-L2-2",
+      "seq": 2,
+      "master_id": null,
+      "kind": "optimization",
+      "title": "fsync before replacing the file",
+      "detail": "Protects against an empty file after a power loss.",
+      "acceptance": "The save path calls fsync; tests pass.",
+      "complexity": 1,
+      "status_at_creation": "proposed"
+    },
+    {
+      "id": "A01-L2-3",
+      "seq": 3,
+      "master_id": null,
+      "kind": "planning",
+      "title": "Plan the next list",
+      "detail": "Follow procedures/next-task-list.md in the payload folder.",
+      "acceptance": "A new list exists for this agent, or the agent is retired with a stated reason.",
+      "complexity": 3,
+      "status_at_creation": "todo"
+    }
+  ]
+}

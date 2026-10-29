@@ -1,0 +1,57 @@
+{
+  "name": "evolution-agents",
+  "displayName": "Adaptive Agents",
+  "description": "Opens Adaptive Agents sessions (Claude Code, Codex, Copilot) inside VS Code.",
+  "version": "0.4.0",
+  "preview": true,
+  "publisher": "frontside",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onUri",
+    "onCommand:evolutionAgents.experimental.openClaude",
+    "onCommand:evolutionAgents.experimental.openCodex",
+    "onCommand:evolutionAgents.experimental.openCopilot",
+    "onCommand:evolutionAgents.experimental.helloClaude",
+    "onCommand:evolutionAgents.experimental.helloCodex",
+    "onCommand:evolutionAgents.experimental.helloCopilot",
+    "onCommand:adaptiveAgents.attachSession"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "adaptiveAgents.attachSession",
+        "title": "Adaptive Agents: Open an Agent Session"
+      },
+      {
+        "command": "evolutionAgents.experimental.openClaude",
+        "title": "Adaptive Agents: Experimental Claude Session"
+      },
+      {
+        "command": "evolutionAgents.experimental.openCodex",
+        "title": "Adaptive Agents: Experimental Codex Session"
+      },
+      {
+        "command": "evolutionAgents.experimental.openCopilot",
+        "title": "Adaptive Agents: Experimental Copilot Session"
+      },
+      {
+        "command": "evolutionAgents.experimental.helloClaude",
+        "title": "Adaptive Agents: Experimental Claude Smoke Test"
+      },
+      {
+        "command": "evolutionAgents.experimental.helloCodex",
+        "title": "Adaptive Agents: Experimental Codex Smoke Test"
+      },
+      {
+        "command": "evolutionAgents.experimental.helloCopilot",
+        "title": "Adaptive Agents: Experimental Copilot Smoke Test"
+      }
+    ]
+  }
+}

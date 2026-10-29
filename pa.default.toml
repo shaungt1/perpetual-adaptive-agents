@@ -1,0 +1,80 @@
+# Perpetual Adaptive Agents: default settings.
+#
+# [project] is filled in per project in the payload's config.toml.
+[project]
+main_branch = "main"
+test_command = ""       # the command that proves main is healthy, e.g. "npm test"; set by the Supervisor during planning
+
+#
+# Resolution order, last wins: this file -> <PA_HOME>/pa.toml (device-wide settings)
+# -> <payload>/config.toml (one project; any key here may be overridden there).
+
+[agents]
+max_active = 8          # how many worker agents a project may have at once (default cap)
+hard_max = 10           # absolute ceiling; max_active is clamped to this value
+max_concurrent = 3      # how many sessions the runner may have running at the same moment
+default_provider = "claude"   # claude | codex | copilot | mock
+
+[tasks]
+max_attempts = 3        # tries on one problem before the agent must stop and rethink (check the board, drop the approach, or escalate)
+max_attempts_hard = 5   # absolute limit; tries 4 and 5 are allowed only with a written reason (pa task fail --extend "why")
+points_task = 1         # scoreboard points for each completed task
+points_planning = 10    # scoreboard points for each completed planning task
+
+[runner]
+tick_seconds = 30           # how often the runner checks for work when no board push arrives
+run_timeout_minutes = 30    # a single session run is stopped after this long
+stuck_after_runs = 3        # consecutive runs without progress before an agent is marked stuck
+presence_ttl_seconds = 120  # how long an agent counts as "live" after its last sign of life
+planner_min_interval_seconds = 120  # the planner is woken at most this often, except for unanswered questions and resets
+
+[limits]
+daily_usd = 25.0            # spending ceiling per project per day (0 = no ceiling). Counts reported or estimated cost (see usd_per_mtok_* below)
+daily_tokens = 0            # token ceiling per project per day, for every provider (0 = no ceiling). Copilot reports no usage at all; limit it with daily_runs_per_agent
+daily_runs_per_agent = 48   # session runs per agent per day
+max_tokens_per_run = 0      # 0 = no ceiling; otherwise a run reporting more is flagged
+
+[board]
+nats_url = "nats://127.0.0.1:4222"
+max_age_hours = 168         # JetStream keeps board messages for 7 days
+max_msgs = 20000            # and at most this many messages
+max_bytes = 67108864        # and at most 64 MiB; oldest messages are discarded first
+duplicate_window_seconds = 120
+db_retention_days = 30      # board messages older than this are pruned from SQLite (unanswered questions are kept)
+
+[docs]
+# Paths (relative to the project root, glob style) that agents may change.
+# Everything else in the project is still editable within an agent's lane,
+# but these lists are what the rules call "shared documents".
+agent_writable = ["CHANGELOG.md", "docs/**"]
+read_only = [".pa/**"]
+
+[decide]
+backend = "heuristic"       # heuristic | systemone | ollama
+url = ""                    # systemone: e.g. https://api.fastino.ai/v1/systemone or a local decider
+model = ""                  # systemone model name, or an Ollama model name
+api_key_env = "PA_DECIDE_API_KEY"   # name of the environment variable that holds the key
+
+[providers.claude]
+command = "claude"
+model = ""                  # empty = the CLI's own default
+permission_mode = "acceptEdits"
+allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep", "Bash", "WebFetch", "WebSearch"]
+
+[providers.codex]
+command = "codex"
+model = ""
+sandbox = "workspace-write"
+# Codex reports tokens but not cost. Set prices (US dollars per million tokens) to have
+# the runner estimate cost so the daily spending ceiling applies. 0 = no estimate.
+usd_per_mtok_in = 0.0
+usd_per_mtok_out = 0.0
+
+[providers.copilot]
+command = "copilot"
+model = ""
+allow_all_tools = true
+
+[providers.mock]
+command = "node"
+script = "tests/e2e/mock-agent.mjs"

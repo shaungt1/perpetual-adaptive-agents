@@ -1,0 +1,11 @@
+node_modules/
+.pa/
+.admin-local/
+*.log
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.build/
+adaptive-agents/workspace/
+.start.lock/
+.pa-home

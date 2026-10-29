@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "New task list (input to `pa list new --file`)",
+  "oneOf": [
+    { "type": "array", "items": { "$ref": "#/$defs/task" } },
+    { "type": "object", "required": ["tasks"], "properties": { "tasks": { "type": "array", "items": { "$ref": "#/$defs/task" } } } }
+  ],
+  "$defs": {
+    "task": { "type": "object", "required": ["kind", "title"],
+      "properties": {
+        "kind": { "enum": ["critical", "owner_request", "bug", "optimization", "feature", "research"] },
+        "title": { "type": "string" }, "detail": { "type": "string" }, "acceptance": { "type": "string" },
+        "complexity": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "master_id": { "type": "string" } } }
+  }
+}

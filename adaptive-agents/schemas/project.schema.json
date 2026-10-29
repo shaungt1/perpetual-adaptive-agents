@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "project.json (<payload>/workspace/project.json): the project's identity, written at registration and kept up to date by `pa project set` and `pa pm join`",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "root",
+    "payload",
+    "plans_folder",
+    "project_managers",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^P-[0-9a-f]{6}$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Basic facts about the project, as key-value pairs"
+    },
+    "owner": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "project_managers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "agent_id",
+          "name",
+          "number"
+        ],
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "joined_at": {
+            "type": "string"
+          },
+          "first": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "string"
+    },
+    "plans_folder": {
+      "type": "string"
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "claude",
+          "codex",
+          "copilot",
+          "cursor",
+          "kilocode"
+        ]
+      }
+    },
+    "main_branch": {
+      "type": "string"
+    },
+    "test_command": {
+      "type": "string"
+    },
+    "board": {
+      "type": "object"
+    },
+    "service": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "project_id": "P-438b8e",
+  "immutable": true,
+  "created_at": "2026-10-28T22:24:30.000Z",
+  "departments": [
+    {
+      "id": "C1",
+      "name": "Storage",
+      "scope": "Saving, loading and deleting notes in the JSON data file.",
+      "owns": [
+        "src/store.js",
+        "data/"
+      ],
+      "out_of_scope": "The command line, documentation and tests; changes there go through the board.",
+      "done_definition": "Each task meets its acceptance criteria, is merged to main, and the tests pass on main."
+    },
+    {
+      "id": "C2",
+      "name": "Command line",
+      "scope": "The notes command and its sub-commands: add, list, delete.",
+      "owns": [
+        "src/cli.js"
+      ],
+      "out_of_scope": "How notes are stored; the store's functions are used as they are.",
+      "done_definition": "Each command works from a terminal, is merged to main, and the tests pass on main."
+    }
+  ],
+  "master_tasks": [
+    {
+      "id": "T-001",
+      "category": "C1",
+      "kind": "owner_request",
+      "title": "Persist notes to a JSON file",
+      "detail": "Notes survive a restart: load on start, save on change.",
+      "acceptance": "Adding a note, restarting, and listing shows the note.",
+      "complexity": 2,
+      "source": "vision: the notes must survive a restart"
+    },
+    {
+      "id": "T-002",
+      "category": "C2",
+      "kind": "owner_request",
+      "title": "add and list commands",
+      "detail": "notes add <text>, notes list.",
+      "acceptance": "Both commands work from a terminal.",
+      "complexity": 2,
+      "source": "vision: add a note, list my notes"
+    }
+  ]
+}

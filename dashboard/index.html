@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptive Agents Control</title>
+<style>
+:root {
+  --bg: #0b1117; --panel: #111a22; --panel-2: #16212b; --line: #223241; --text: #d7e2ea; --muted: #7f93a3;
+  --accent: #39d0b0; --accent-2: #f2b84b; --danger: #ff6b6b; --ok: #39d0b0; --info: #6fb3ff; --warn: #f2b84b; --violet: #b69cff;
+  --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3f5f7; --panel: #ffffff; --panel-2: #f6f8fa; --line: #dde3e8; --text: #16212b; --muted: #5d6f7d;
+    --accent: #0e9c80; --accent-2: #b97b00; --danger: #d43c3c; --ok: #0e9c80; --info: #2a74d1; --warn: #b97b00; --violet: #6d4fd1;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f3f5f7; --panel: #ffffff; --panel-2: #f6f8fa; --line: #dde3e8; --text: #16212b; --muted: #5d6f7d;
+  --accent: #0e9c80; --accent-2: #b97b00; --danger: #d43c3c; --ok: #0e9c80; --info: #2a74d1; --warn: #b97b00; --violet: #6d4fd1;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 var(--sans); }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+.brand { font: 600 13px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-right: 8px; }
+.brand b { color: var(--text); }
+select, input, button { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.danger { color: var(--danger); }
+button.small { padding: 2px 8px; font-size: 12px; }
+.spacer { flex: 1; }
+.phase { font: 600 12px var(--mono); text-transform: uppercase; padding: 3px 9px; border-radius: 99px; border: 1px solid currentColor; }
+.phase.running { color: var(--ok); } .phase.paused, .phase.awaiting_approval { color: var(--warn); } .phase.stopped { color: var(--danger); } .phase.planning { color: var(--info); }
+main { padding: 18px 20px 40px; max-width: 1500px; margin: 0 auto; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; }
+.kpi .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.kpi .value { font: 600 22px var(--mono); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.kpi .sub { color: var(--muted); font: 12px var(--mono); }
+.grid { display: grid; gap: 14px; }
+.g3 { grid-template-columns: 1.1fr 1fr 1fr; }
+.g2 { grid-template-columns: 1.2fr 1fr; }
+@media (max-width: 1100px) { .g3, .g2 { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
+.panel h2 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.panel h2 .count { color: var(--text); font-family: var(--mono); }
+section { margin-top: 14px; }
+.radar-wrap { display: flex; justify-content: center; }
+.radar text { fill: var(--muted); font: 11px var(--sans); }
+.radar .ring { fill: none; stroke: var(--line); }
+.radar .spoke { stroke: var(--line); }
+.radar .shape { fill: color-mix(in srgb, var(--accent) 22%, transparent); stroke: var(--accent); stroke-width: 2; }
+.radar .dot { fill: var(--accent); }
+.radar .pct { fill: var(--text); font: 600 11px var(--mono); }
+.sweep { animation: sweep 6s linear infinite; }
+@keyframes sweep { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sweep { animation: none; display: none; } }
+.bars .row { display: grid; grid-template-columns: 110px 1fr 56px; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px; }
+.bars .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: 12px; }
+.bars .track { height: 10px; background: var(--panel-2); border-radius: 99px; overflow: hidden; display: flex; }
+.bars .fill { height: 100%; background: var(--accent); }
+.bars .fill.out { background: var(--accent-2); }
+.bars .num { text-align: right; font: 12px var(--mono); color: var(--muted); }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.mono, .mono { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.table-scroll { overflow-x: auto; }
+.callsign { font: 600 13px var(--mono); }
+.live { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+.live.on { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; font: 600 11px var(--mono); border: 1px solid currentColor; text-transform: uppercase; }
+.s-active, .s-done, .s-in_progress { color: var(--ok); } .s-idle, .s-todo { color: var(--info); } .s-stuck, .s-blocked { color: var(--danger); }
+.s-retired, .s-cancelled, .s-declined { color: var(--muted); } .s-stopped { color: var(--warn); } .s-proposed { color: var(--violet); }
+.progress { height: 6px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin-top: 4px; min-width: 80px; }
+.progress > div { height: 100%; background: var(--accent); }
+.muted { color: var(--muted); }
+.feed { max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.msg { border-left: 3px solid var(--line); padding: 6px 10px; background: var(--panel-2); border-radius: 0 8px 8px 0; }
+.msg .meta { font: 11px var(--mono); color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+.msg .text { margin-top: 2px; word-break: break-word; }
+.msg.t-question { border-color: var(--warn); } .msg.t-answer { border-color: var(--info); } .msg.t-done { border-color: var(--ok); }
+.msg.t-conflict, .msg.t-stop { border-color: var(--danger); } .msg.t-proposal { border-color: var(--violet); } .msg.t-announce { border-color: var(--accent); }
+.msg.unanswered { outline: 1px dashed var(--warn); }
+.tasks { max-height: 520px; overflow-y: auto; }
+.agent-group { margin-bottom: 10px; }
+.agent-group h3 { margin: 6px 0; font: 600 12px var(--mono); }
+.task { display: grid; grid-template-columns: 96px 1fr auto; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 13px; align-items: baseline; }
+.task .id { font: 11px var(--mono); color: var(--muted); }
+.kind { font: 10px var(--mono); color: var(--muted); text-transform: uppercase; margin-left: 6px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.filters button.on { border-color: var(--accent); color: var(--accent); }
+.empty { color: var(--muted); padding: 10px 0; }
+.vision { white-space: pre-wrap; font-size: 13px; max-height: 160px; overflow-y: auto; color: var(--text); background: var(--panel-2); border-radius: 8px; padding: 10px; }
+.error { color: var(--danger); padding: 10px 20px; }
+.projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.proj { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; color: var(--text); font: inherit; }
+.proj.on { border-color: var(--accent); }
+.proj .pname { font-weight: 600; } .proj .pmeta { font: 12px var(--mono); color: var(--muted); margin-top: 4px; }
+.ro { color: var(--warn); font: 12px var(--mono); }
+.nav { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+.nav a { color: var(--accent); text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.tabs { display: flex; gap: 6px; margin: 0 0 14px; flex-wrap: wrap; }
+.tabs a { padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); text-decoration: none; background: var(--panel); }
+.tabs a.on { border-color: var(--accent); color: var(--accent); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.card.done { border-left: 4px solid var(--ok); } .card.in_progress { border-left: 4px solid var(--info); } .card.blocked { border-left: 4px solid var(--danger); }
+.card.proposed { border-left: 4px solid var(--violet); } .card.todo, .card.assigned { border-left: 4px solid var(--line); } .card.cancelled, .card.declined { opacity: .6; }
+.card .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.card .cid { font: 11px var(--mono); color: var(--muted); }
+.card .title { font-weight: 600; }
+.card .small-text { font-size: 12px; color: var(--muted); }
+.card .rec { font-size: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+.card textarea { width: 100%; min-height: 56px; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+.dept { margin-bottom: 18px; }
+.dept h3 { margin: 0 0 4px; font-size: 15px; }
+.dept .def { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: grid; grid-template-columns: 110px 1fr; gap: 2px 10px; }
+.agentbox { cursor: pointer; text-align: left; font: inherit; color: var(--text); }
+.agentbox:hover { border-color: var(--accent); }
+.big { font: 600 20px var(--mono); }
+.list-head { display: flex; gap: 10px; align-items: baseline; margin: 16px 0 8px; }
+.list-head h3 { margin: 0; font: 600 14px var(--mono); }
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; font-size: 13px; }
+.kv div:nth-child(odd) { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Adaptive Agents <b>Control</b></div>
+  <nav class="nav" id="crumbs"></nav>
+  <span id="phase" class="phase" hidden></span>
+  <div class="spacer"></div>
+  <span id="projectActions" hidden><button id="pauseBtn">Pause</button> <button id="stopBtn" class="danger">Stop project</button></span>
+  <button id="themeBtn" title="Switch light or dark">Theme</button>
+</header>
+<div id="err" class="error" hidden></div>
+<main>
+  <!-- All projects -->
+  <div id="v-projects" hidden>
+    <section class="panel" style="margin-top:0"><h2>All projects <span class="count" id="projCount"></span></h2><div class="cards" id="projects"></div></section>
+    <section class="panel"><h2>Add a project folder</h2>
+      <div class="muted" style="margin-bottom:8px">Normally the project's chat registers it (see AGENT-SETUP.md). Here you can point the service at a folder that already has the adaptive-agents folder copied into it. Only that folder's own records are created; no other file in the project is changed.</div>
+      <input id="rootInput" placeholder="project folder path" size="50" aria-label="Project folder"> <button id="rootBtn">Register</button></section>
+  </div>
+
+  <!-- One project -->
+  <div id="v-project" hidden>
+    <div class="tabs" id="tabs"></div>
+    <div id="t-overview" hidden>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid g3">
+        <div class="panel"><h2>Progress by department</h2><div class="radar-wrap" id="radar"></div></div>
+        <div class="panel"><h2>Scoreboard <span class="muted">1 per task · 10 per planning</span></h2><div class="bars" id="score"></div></div>
+        <div class="panel"><h2>Tokens by agent</h2><div class="bars" id="tokens"></div>
+          <div class="legend"><span><i style="background:var(--accent)"></i>in</span><span><i style="background:var(--accent-2)"></i>out</span></div></div>
+      </div>
+      <section class="panel"><h2>Agents <span class="count" id="agentCount"></span></h2><div class="table-scroll"><table id="agents"></table></div></section>
+      <section class="grid g2">
+        <div class="panel"><h2>Tasks <span class="count" id="taskCount"></span></h2><div class="filters" id="taskFilters"></div><div class="tasks" id="tasks"></div></div>
+        <div class="panel"><h2>Message board <span class="count" id="boardCount"></span></h2><div class="filters" id="boardFilters"></div><div class="feed" id="feed"></div></div>
+      </section>
+      <section class="grid g3">
+        <div class="panel"><h2>Proposals for the user <span class="count" id="propCount"></span></h2><div id="proposals"></div></div>
+        <div class="panel"><h2>Planning documents</h2><div id="docs"></div></div>
+        <div class="panel"><h2>Who holds which files</h2><div id="claims"></div></div>
+      </section>
+      <section class="panel"><h2>Vision <span class="muted" id="visionVer"></span></h2><div class="vision" id="vision"></div></section>
+      <section class="panel"><h2>Project</h2><div class="kv" id="projInfo"></div></section>
+    </div>
+    <div id="t-master" hidden><div id="master"></div></div>
+    <div id="t-agents" hidden><div class="cards" id="agentBoxes"></div></div>
+    <div id="t-board" hidden><section class="panel" style="margin-top:0"><h2>Message board <span class="count" id="boardCount2"></span></h2><div class="filters" id="boardFilters2"></div><div class="feed" id="feed2" style="max-height:none"></div></section></div>
+  </div>
+
+  <!-- One agent -->
+  <div id="v-agent" hidden>
+    <div class="kpis" id="agentKpis"></div>
+    <section class="panel" style="margin-top:0"><h2>Agent</h2><div class="kv" id="agentInfo"></div></section>
+    <div id="agentLists"></div>
+  </div>
+</main>
+
+<script id="boot" type="application/json">__BOOT__</script>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (n) => Number(n || 0).toLocaleString();
+const fmtTime = (s) => { s = Math.round(s || 0); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? `${h}h ${m}m` : m ? `${m}m ${s % 60}s` : `${s}s`; };
+const ago = (iso) => { if (!iso) return ''; const s = (Date.now() - new Date(iso)) / 1000; return s < 60 ? `${Math.round(s)}s ago` : s < 3600 ? `${Math.round(s / 60)}m ago` : s < 86400 ? `${Math.round(s / 3600)}h ago` : `${Math.round(s / 86400)}d ago`; };
+const BOOT = JSON.parse(document.getElementById('boot').textContent);
+let route = {}, projects = [], st = null, files = null, es = null, taskFilter = 'open', boardFilter = 'all', openForm = null;
+
+try { const t = localStorage.getItem('pa-theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+$('themeBtn').onclick = () => {
+  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  const next = cur === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('pa-theme', next); } catch {}
+};
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: 'POST', headers: { 'content-type': 'application/json', 'x-pa-token': BOOT.token }, body: JSON.stringify(body) } : {});
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.message || j.error);
+  return j;
+}
+function showErr(e) { $('err').hidden = !e; $('err').textContent = e ? String(e.message || e) : ''; }
+async function act(action, target, extra = {}) {
+  try { await api('/api/action', { project: route.project, action, target, ...extra }); showErr(null); refresh(); } catch (e) { showErr(e); }
+}
+
+// ---- routing: #/  ·  #/p/<project>/<tab>  ·  #/p/<project>/a/<agent id>
+function parseRoute() {
+  const h = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  if (h[0] === 'p' && /^P-[0-9a-f]{6}$/.test(h[1] || '')) {
+    if (h[2] === 'a' && h[3]) return { view: 'agent', project: h[1], agent: decodeURIComponent(h[3]) };
+    return { view: 'project', project: h[1], tab: ['overview', 'master', 'agents', 'board'].includes(h[2]) ? h[2] : 'overview' };
+  }
+  const legacy = new URLSearchParams(location.search).get('project') || BOOT.project;
+  if (legacy && /^P-[0-9a-f]{6}$/.test(legacy) && !location.hash) return { view: 'project', project: legacy, tab: 'overview' };
+  return { view: 'projects' };
+}
+window.addEventListener('hashchange', () => go());
+function go() {
+  const prev = route;
+  route = parseRoute();
+  for (const v of ['projects', 'project', 'agent']) $(`v-${v}`).hidden = route.view !== v;
+  $('projectActions').hidden = route.view === 'projects';
+  $('phase').hidden = route.view === 'projects';
+  if (route.project !== prev.project) { st = null; files = null; connect(); }
+  renderAll();
+  refresh();
+}
+function projName(id) { return projects.find(p => p.id === id)?.name || files?.project?.name || st?.project?.name || id; }
+function crumbs() {
+  const parts = [`<a href="#/">All projects</a>`];
+  if (route.project) parts.push(`<span class="muted">/</span><a href="#/p/${route.project}">${esc(projName(route.project))}</a>`);
+  if (route.view === 'agent') { const a = files?.agents.find(x => x.id === route.agent); parts.push(`<span class="muted">/</span><span>${esc(a?.name || route.agent)}</span>`); }
+  $('crumbs').innerHTML = parts.join(' ');
+}
+
+// ---- data
+async function loadProjects() { projects = await api('/api/projects'); }
+async function loadFiles() { if (route.project) files = await api(`/api/projects/${route.project}/files`); }
+async function refresh() {
+  try {
+    await loadProjects();
+    if (route.view !== 'projects') await loadFiles();
+    showErr(null);
+  } catch (e) { showErr(e); }
+  renderAll();
+}
+setInterval(refresh, 4000);
+function connect() {
+  if (es) { es.close(); es = null; }
+  if (!route.project) return;
+  es = new EventSource(`/api/stream?project=${encodeURIComponent(route.project)}`);
+  es.onmessage = (e) => { st = JSON.parse(e.data); renderAll(); };
+  es.addEventListener('error', async () => { try { st = await api(`/api/state?project=${encodeURIComponent(route.project)}`); renderAll(); } catch (e) { showErr(e); } });
+}
+
+function renderAll() {
+  crumbs();
+  if (route.view === 'projects') return renderProjects();
+  if (st) {
+    $('phase').textContent = st.project.phase.replace('_', ' '); $('phase').className = `phase ${st.project.phase}`;
+    $('pauseBtn').textContent = st.project.phase === 'paused' ? 'Resume' : 'Pause';
+    $('stopBtn').dataset.stopped = st.stop_requested ? '1' : '0';
+    $('stopBtn').textContent = st.stop_requested ? 'Clear stop' : 'Stop project';
+  }
+  if (route.view === 'project') {
+    $('tabs').innerHTML = [['overview', 'Overview'], ['master', 'Master task list'], ['agents', 'Agents'], ['board', 'Message board']]
+      .map(([k, l]) => `<a href="#/p/${route.project}/${k}" class="${route.tab === k ? 'on' : ''}">${l}</a>`).join('');
+    for (const t of ['overview', 'master', 'agents', 'board']) $(`t-${t}`).hidden = route.tab !== t;
+    if (route.tab === 'overview') renderOverview();
+    if (route.tab === 'master') renderMaster();
+    if (route.tab === 'agents') renderAgentBoxes();
+    if (route.tab === 'board') renderBoard('2');
+  }
+  if (route.view === 'agent') renderAgent();
+}
+
+// ---- all projects
+function renderProjects() {
+  $('projCount').textContent = projects.length;
+  $('projects').innerHTML = projects.map(p => `<div class="card">
+    <div class="top"><a class="title" href="#/p/${esc(p.id)}" style="color:var(--text)">${esc(p.name)}</a><span class="phase ${esc(p.phase)}" style="font-size:10px">${esc(String(p.phase).replace('_', ' '))}</span></div>
+    ${p.description ? `<div class="small-text">${esc(p.description)}</div>` : ''}
+    <div class="small-text mono">${p.error ? esc(p.error) : `${p.agents} agents · ${p.live} live${p.stuck ? ` · ${p.stuck} stuck` : ''} · ${p.tasks_done}/${p.tasks_total} tasks done`}</div>
+    ${p.error ? '' : `<div class="small-text mono">$${Number(p.cost_usd).toFixed(2)} spent · ${p.open_questions} questions · ${p.proposals} proposals${p.project_managers?.length ? ` · managers: ${esc(p.project_managers.join(', '))}` : ''}</div>`}
+    <div class="small-text mono" title="${esc(p.payload)}">${esc(p.root)}</div>
+    <div class="small-text mono">${esc(p.id)}${p.last_activity ? ` · active ${ago(p.last_activity)}` : ''}</div>
+    ${openForm === `rename:${p.id}` ? `<div><input id="renameInput" value="${esc(p.name)}" size="24"> <button class="small" data-rename="${esc(p.id)}">Save</button> <button class="small" data-cancel="1">Cancel</button></div>`
+      : `<div><button class="small" data-goto="#/p/${esc(p.id)}">Open</button> <button class="small" data-form="rename:${esc(p.id)}">Rename</button></div>`}
+  </div>`).join('') || '<div class="empty">No projects registered yet. Follow AGENT-SETUP.md in perpetual-adaptive-agents from a chat in your project.</div>';
+}
+$('rootBtn').onclick = async () => {
+  try { const r = await api('/api/projects/register', { path: $('rootInput').value.trim() }); location.hash = `#/p/${r.id}`; }
+  catch (e) { showErr(e); }
+};
+$('pauseBtn').onclick = () => act(st?.project.phase === 'paused' ? 'resume' : 'pause');
+$('stopBtn').onclick = () => act($('stopBtn').dataset.stopped === '1' ? 'start-project' : 'stop-project');
+
+// ---- project overview (the metrics dashboard)
+function radar(cats) {
+  const W = 440, H = 340, C = 220, CY = 170, R = 115;
+  if (!cats.length) return '<div class="empty">No departments yet. They appear after the plan is imported.</div>';
+  const n = Math.max(cats.length, 3);
+  const pt = (i, r) => { const a = -Math.PI / 2 + (2 * Math.PI * i) / n; return [C + r * Math.cos(a), CY + r * Math.sin(a)]; };
+  let g = `<svg class="radar" viewBox="0 0 ${W} ${H}" width="100%" style="max-width:460px" role="img" aria-label="Percent complete per department">`;
+  g += `<defs><linearGradient id="sw" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity="0"/><stop offset="1" stop-color="var(--accent)" stop-opacity=".35"/></linearGradient></defs>`;
+  for (const f of [0.25, 0.5, 0.75, 1]) g += `<circle class="ring" cx="${C}" cy="${CY}" r="${R * f}"/>`;
+  g += `<path class="sweep" style="transform-origin:${C}px ${CY}px" d="M${C},${CY} L${C + R},${CY} A${R},${R} 0 0,0 ${C + R * Math.cos(-0.5)},${CY + R * Math.sin(-0.5)} Z" fill="url(#sw)"/>`;
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const c = cats[i];
+    const [x, y] = pt(i, R); g += `<line class="spoke" x1="${C}" y1="${CY}" x2="${x}" y2="${y}"/>`;
+    const v = c ? c.percent / 100 : 0; pts.push(pt(i, Math.max(v, 0.02) * R));
+    if (c) {
+      const [lx, ly] = pt(i, R + 22);
+      const anchor = Math.abs(lx - C) < 8 ? 'middle' : lx > C ? 'start' : 'end';
+      g += `<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle">${esc(c.name)}</text>`;
+      g += `<text class="pct" x="${lx}" y="${ly + 13}" text-anchor="${anchor}" dominant-baseline="middle">${c.percent}% · ${c.done}/${c.total}</text>`;
+    }
+  }
+  g += `<polygon class="shape" points="${pts.map(p => p.join(',')).join(' ')}"/>`;
+  for (const [x, y] of pts) g += `<circle class="dot" cx="${x}" cy="${y}" r="3"/>`;
+  return g + '</svg>';
+}
+function bars(rows, { value, value2, label, num }) {
+  if (!rows.length) return '<div class="empty">Nothing yet.</div>';
+  const max = Math.max(1, ...rows.map(r => value(r) + (value2 ? value2(r) : 0)));
+  return rows.map(r => `<div class="row"><div class="name" title="${esc(label(r))}">${esc(label(r))}</div>
+    <div class="track"><div class="fill" style="width:${(100 * value(r)) / max}%"></div>${value2 ? `<div class="fill out" style="width:${(100 * value2(r)) / max}%"></div>` : ''}</div>
+    <div class="num">${num(r)}</div></div>`).join('');
+}
+const names = () => Object.fromEntries((st?.agents || files?.agents || []).map(a => [a.id, a.name]));
+
+function renderOverview() {
+  if (!st) return;
+  const T = st.totals, L = st.limits, N = names();
+  const kpi = (label, value, sub = '') => `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`;
+  const workers = st.agents.filter(a => a.role === 'worker');
+  $('kpis').innerHTML = [
+    kpi('Tasks done', `${T.tasks_done}/${T.tasks_total}`, T.tasks_total ? `${Math.round((100 * T.tasks_done) / T.tasks_total)}% complete` : ''),
+    kpi('Points', fmt(T.points), `${st.scoreboard[0] ? esc(st.scoreboard[0].name) + ' leads' : ''}`),
+    kpi('Agents live', `${T.live}/${st.agents.length}`, `${workers.filter(a => a.status === 'retired').length} retired · ${T.stuck} stuck · cap ${L.max_active}`),
+    kpi('Session runs', fmt(T.runs), `${fmtTime(T.seconds)} agent time`),
+    kpi('Tokens in / out', `${fmt(T.tokens_in)}`, `${fmt(T.tokens_out)} out`),
+    kpi('Spend today', `$${Number(L.spent_today_usd).toFixed(2)}`, L.daily_usd > 0 ? `ceiling $${L.daily_usd} · total $${T.cost_usd.toFixed(2)}` : `no ceiling · total $${T.cost_usd.toFixed(2)}`),
+    kpi('Questions open', st.unanswered.length, `${st.resets.length} reset(s) pending`),
+  ].join('');
+  $('radar').innerHTML = radar(st.categories);
+  $('score').innerHTML = bars(st.scoreboard, { value: r => r.points, label: r => r.name, num: r => r.points });
+  $('tokens').innerHTML = bars(st.agents, { value: a => a.usage.tokens_in, value2: a => a.usage.tokens_out, label: a => a.name, num: a => fmt(a.usage.tokens_in + a.usage.tokens_out) });
+  $('agentCount').textContent = st.agents.length;
+  $('agents').innerHTML = `<thead><tr><th>Agent</th><th>Status</th><th>Department</th><th>Now working on</th><th>Tasks</th><th>Points</th><th>Runs</th><th>Tokens in/out</th><th>Cost</th><th>Time</th><th>Avg. complexity</th><th></th></tr></thead><tbody>` +
+    st.agents.map(a => {
+      const pct = a.tasks.total ? (100 * a.tasks.done) / a.tasks.total : 0;
+      const stop = ['stopped', 'stuck', 'retired'].includes(a.status)
+        ? `<button class="small" data-act="start-agent" data-target="${esc(a.id)}">${a.status === 'retired' ? 'Reactivate' : 'Start'}</button>`
+        : `<button class="small danger" data-act="stop-agent" data-target="${esc(a.id)}">Stop</button>`;
+      return `<tr><td><span class="live ${a.live ? 'on' : ''}" title="${a.live ? 'live' : 'not running'}"></span><a class="callsign" href="#/p/${route.project}/a/${esc(a.id)}" style="color:var(--text)">${esc(a.name)}</a><div class="muted mono">${esc(a.id)} · ${esc(a.role)} · ${esc(a.provider)}</div></td>
+        <td><span class="pill s-${esc(a.status)}">${esc(a.status)}</span>${a.stuck_runs ? `<div class="muted mono">${a.stuck_runs} idle run(s)</div>` : ''}</td>
+        <td>${esc((a.categories || []).join(', '))}<div class="muted">${esc(a.lane || '')}</div></td>
+        <td>${a.current_task ? `<span class="mono">${esc(a.current_task.id)}</span> ${esc(a.current_task.title)}` : '<span class="muted">-</span>'}</td>
+        <td class="mono">${a.tasks.done}/${a.tasks.total}${a.tasks.blocked ? ` · <span style="color:var(--danger)">${a.tasks.blocked} blocked</span>` : ''}${a.tasks.proposed ? ` · <span style="color:var(--violet)">${a.tasks.proposed} proposed</span>` : ''}<div class="progress"><div style="width:${pct}%"></div></div></td>
+        <td class="mono">${a.points}</td><td class="mono">${a.usage.runs}</td>
+        <td class="mono">${fmt(a.usage.tokens_in)} / ${fmt(a.usage.tokens_out)}</td><td class="mono">$${a.usage.cost_usd.toFixed(3)}</td>
+        <td class="mono">${fmtTime(a.usage.seconds)}<div class="muted">${a.last_seen ? ago(a.last_seen) : ''}</div></td><td class="mono">${a.avg_complexity}</td><td>${stop}</td></tr>`;
+    }).join('') + '</tbody>';
+  const tf = { open: t => ['todo', 'in_progress', 'blocked', 'paused', 'waiting_user'].includes(t.status), done: t => t.status === 'done', blocked: t => t.status === 'blocked', all: () => true };
+  $('taskFilters').innerHTML = Object.keys(tf).map(k => `<button class="small ${taskFilter === k ? 'on' : ''}" data-taskfilter="${k}">${k}</button>`).join('');
+  const shown = st.tasks.filter(tf[taskFilter]);
+  $('taskCount').textContent = `${shown.length} shown`;
+  const groups = {};
+  for (const t of shown) (groups[t.agent_id] ||= []).push(t);
+  $('tasks').innerHTML = Object.entries(groups).map(([aid, ts]) => `<div class="agent-group"><h3>${esc(N[aid] || aid)}</h3>` + ts.map(t =>
+    `<div class="task"><span class="id">${esc(t.id)}</span><span>${esc(t.title)}<span class="kind">${esc(t.kind)}${t.attempts ? ` · ${t.attempts} attempt(s)` : ''}</span></span>
+     <span><span class="pill s-${esc(t.status)}">${esc(t.status.replace('_', ' '))}</span>${t.status === 'blocked' ? ` <button class="small" data-act="unblock" data-target="${esc(t.id)}">Unblock</button>` : ''}</span></div>`).join('') + '</div>').join('') || '<div class="empty">No tasks match.</div>';
+  renderBoard('');
+  const props = st.tasks.filter(t => t.status === 'proposed');
+  $('propCount').textContent = props.length;
+  $('proposals').innerHTML = props.map(t => `<div class="msg t-proposal"><div class="meta"><span>${esc(N[t.agent_id] || t.agent_id)}</span><span>${esc(t.id)}</span><span>${esc(t.kind)}</span></div>
+     <div class="text"><b>${esc(t.title)}</b> ${esc(t.detail || '')}</div>
+     ${openForm === `decline:${t.id}` ? `<textarea id="formText" placeholder="Why (optional)"></textarea><div style="margin-top:6px;display:flex;gap:6px"><button class="small danger" data-send="decline" data-target="${esc(t.id)}">Decline</button><button class="small" data-cancel="1">Cancel</button></div>`
+      : `<div style="margin-top:6px;display:flex;gap:6px"><button class="small" data-act="approve" data-target="${esc(t.id)}">Approve</button><button class="small danger" data-form="decline:${esc(t.id)}">Decline</button></div>`}</div>`).join('') || '<div class="empty">No proposals waiting.</div>';
+  $('docs').innerHTML = st.documents.length ? `<table><tbody>${st.documents.map(d => `<tr><td>${esc(d.title)}<div class="muted mono">${esc(d.key)}</div></td><td><span class="pill s-${d.status === 'approved' ? 'done' : d.status === 'checked' ? 'todo' : 'stopped'}">${esc(d.status)}</span></td>
+     <td>${d.status !== 'approved' ? `<button class="small" data-act="doc-status" data-target="${esc(d.key)}" data-value="approved">Approve</button>` : ''}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">No documents registered.</div>';
+  $('claims').innerHTML = st.claims.length ? `<table><tbody>${st.claims.map(c => `<tr><td class="mono">${esc(c.path)}</td><td>${esc(N[c.agent_id] || c.agent_id)}</td><td class="mono">${esc(c.task_id)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">No files are claimed right now.</div>';
+  $('vision').textContent = st.vision ? st.vision.text : 'No vision recorded yet.';
+  $('visionVer').textContent = st.vision ? `version ${st.vision.version} · verbatim` : '';
+  const pj = files?.project;
+  $('projInfo').innerHTML = pj ? [['Name', pj.name], ['Description', pj.description || '(none yet)'], ['Owner', pj.owner?.name || '(not recorded)'],
+    ['Project managers', (pj.project_managers || []).map(m => m.name).join(', ') || '(none has joined yet)'], ['Folder', pj.root], ['Records', pj.payload],
+    ['Plans folder', pj.plans_folder], ['Tools', (pj.tools || []).join(', ') || '(none detected)'], ['Board channels', pj.board?.channels], ['Facts', Object.entries(pj.facts || {}).map(([k, v]) => `${k}: ${v}`).join(' · ') || '(none)']]
+    .map(([k, v]) => `<div>${esc(k)}</div><div class="mono">${esc(v)}</div>`).join('') : '';
+}
+
+function renderBoard(sfx) {
+  if (!st) return;
+  const N = names();
+  const types = ['all', 'question', 'ask_user', 'announce', 'branch', 'merge', 'done', 'conflict', 'proposal', 'planning', 'stop'];
+  $(`boardFilters${sfx}`).innerHTML = types.map(k => `<button class="small ${boardFilter === k ? 'on' : ''}" data-boardfilter="${k}">${k}</button>`).join('');
+  const open = new Set(st.unanswered.map(m => m.id));
+  const msgs = st.board.filter(m => boardFilter === 'all' || m.type === boardFilter).reverse();
+  $(`boardCount${sfx}`).textContent = `${st.board.length} recent`;
+  $(`feed${sfx}`).innerHTML = msgs.map(m => `<div class="msg t-${esc(m.type)} ${open.has(m.id) ? 'unanswered' : ''}">
+    <div class="meta"><span>${esc(N[m.from_agent] || m.from_agent)} → ${esc(N[m.to_agent] || m.to_agent)}</span><span>${esc(m.type)}${open.has(m.id) ? ' · waiting for a reply' : ''}</span>${m.task_id ? `<span>${esc(m.task_id)}</span>` : ''}<span>${ago(m.created_at)}</span></div>
+    <div class="text">${esc(m.text)}</div>${m.files?.length ? `<div class="meta">${m.files.map(esc).join(', ')}</div>` : ''}</div>`).join('') || '<div class="empty">The board is quiet.</div>';
+}
+
+// ---- master task list as cards, by department
+function renderMaster() {
+  if (!files) return;
+  if (!files.master_tasks.length) { $('master').innerHTML = '<section class="panel" style="margin-top:0"><div class="empty">No master task list yet. It appears when the project manager imports the plan.</div></section>'; return; }
+  $('master').innerHTML = files.departments.map(d => {
+    const ts = files.master_tasks.filter(t => t.category === d.id);
+    const done = ts.filter(t => t.status === 'done').length;
+    return `<section class="panel dept" style="margin-top:0"><h3>${esc(d.id)} · ${esc(d.name)} <span class="muted mono" style="font-size:12px">${done}/${ts.length} done</span></h3>
+      <div class="def"><span>Scope</span><span>${esc(d.scope || d.description || '')}</span><span>Owns</span><span class="mono">${esc((d.owns || []).join(', '))}</span><span>Out of scope</span><span>${esc(d.out_of_scope || '')}</span><span>Done means</span><span>${esc(d.done_definition || '')}</span></div>
+      <div class="cards">${ts.map(t => `<div class="card ${esc(t.status.replace(' ', '_'))}">
+        <div class="top"><span class="cid">${esc(t.id)} · ${esc(t.kind)}${t.complexity ? ` · complexity ${t.complexity}` : ''}</span><span class="pill s-${esc(t.status === 'done' ? 'done' : t.status === 'in_progress' ? 'in_progress' : 'todo')}">${esc(t.status)}</span></div>
+        <div class="title">${esc(t.title)}</div>
+        ${t.detail ? `<div class="small-text">${esc(t.detail)}</div>` : ''}
+        ${t.acceptance ? `<div class="small-text"><b>Done when:</b> ${esc(t.acceptance)}</div>` : ''}
+        ${t.source ? `<div class="small-text">Source: ${esc(t.source)}</div>` : ''}
+        <div class="small-text mono">${t.assigned.length ? t.assigned.map(a => `${esc(a.agent)} ${esc(a.id)} (${esc(a.status)})`).join('<br>') : 'not assigned'}</div>
+        ${openForm === `obj:${t.id}` || openForm === `rm:${t.id}` ? `<textarea id="formText" placeholder="${openForm.startsWith('rm') ? 'Why remove it (optional)' : 'What you disagree with'}"></textarea>
+          <div><button class="small danger" data-send="${openForm.startsWith('rm') ? 'remove' : 'object'}" data-target="${esc(t.id)}">Send to the project manager</button> <button class="small" data-cancel="1">Cancel</button></div>`
+        : `<div><button class="small" data-form="obj:${esc(t.id)}">Object</button> <button class="small danger" data-form="rm:${esc(t.id)}">Ask to remove</button></div>`}
+      </div>`).join('')}</div></section>`;
+  }).join('');
+}
+
+// ---- agents as boxes
+function renderAgentBoxes() {
+  if (!files) return;
+  $('agentBoxes').innerHTML = files.agents.map(a => {
+    const pct = a.counts.tasks ? Math.round((100 * a.counts.done) / a.counts.tasks) : 0;
+    return `<button class="card agentbox" data-agent="${esc(a.id)}">
+      <div class="top"><span><span class="live ${a.live ? 'on' : ''}"></span><span class="callsign">${esc(a.name)}</span></span><span class="pill s-${esc(a.status)}">${esc(a.status)}</span></div>
+      <div class="small-text mono">${esc(a.id)} · ${esc(a.role)} · ${esc(a.provider)}${(a.department_names || []).length ? ` · ${esc(a.department_names.join(', '))}` : ''}</div>
+      <div class="small-text">${esc(a.lane || '')}</div>
+      <div><span class="big">${a.counts.done}</span><span class="muted"> done · </span><span class="big">${a.counts.open}</span><span class="muted"> open · ${a.lists.length} list(s) · ${a.points} points</span></div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+      ${a.current ? `<div class="small-text">Now: ${esc(a.current.id)} ${esc(a.current.title)}</div>` : ''}
+    </button>`;
+  }).join('') || '<div class="empty">No agents yet. They are created when the project manager imports the plan.</div>';
+}
+
+// ---- one agent
+function renderAgent() {
+  if (!files) return;
+  const a = files.agents.find(x => x.id === route.agent);
+  if (!a) { $('agentInfo').innerHTML = '<div>Not found</div><div></div>'; return; }
+  const kpi = (label, value, sub = '') => `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`;
+  $('agentKpis').innerHTML = [kpi('Done', a.counts.done, `of ${a.counts.tasks} tasks`), kpi('Open', a.counts.open, ''), kpi('Task lists', a.lists.length, 'never edited; each new list stacks on'),
+    kpi('Points', a.points, ''), kpi('Status', `<span class="pill s-${esc(a.status)}" style="font-size:14px">${esc(a.status)}</span>`, a.live ? 'live now' : 'not running'),
+    a.usage ? kpi('Tokens', fmt(a.usage.tokens_in + a.usage.tokens_out), `$${Number(a.usage.cost_usd).toFixed(3)} · ${a.usage.runs} runs`) : ''].join('');
+  $('agentInfo').innerHTML = [['Name', `${a.name} (${a.id})`], ['Role', a.role], ['Department', (a.department_names || []).join(', ') || '-'], ['Lane', a.lane || '-'], ['Persona', a.persona || '-'],
+    ['Runs on', `${a.provider}${a.model ? ` · ${a.model}` : ''}`], ['Folder', a.folder], ['Instructions', `${a.folder}/INSTRUCTIONS.md`], ['Resources', (a.resources || []).join(', ') || '-']]
+    .map(([k, v]) => `<div>${esc(k)}</div><div class="mono">${esc(v)}</div>`).join('') +
+    `<div></div><div>${['stopped', 'stuck', 'retired'].includes(a.status) ? `<button class="small" data-act="start-agent" data-target="${esc(a.id)}">${a.status === 'retired' ? 'Reactivate' : 'Start'}</button>` : `<button class="small danger" data-act="stop-agent" data-target="${esc(a.id)}">Stop this agent</button>`}</div>`;
+  $('agentLists').innerHTML = a.lists.slice().reverse().map(l => {
+    const done = l.tasks.filter(t => t.status === 'done').length;
+    return `<div class="list-head"><h3>${esc(l.list_id)}</h3><span class="muted mono">${done}/${l.tasks.length} done · written ${ago(l.created_at)}</span></div>
+    <div class="cards">${l.tasks.map(t => `<div class="card ${esc(t.status)}">
+      <div class="top"><span class="cid">${esc(t.id)} · ${esc(t.kind)}${t.master_id ? ` · from ${esc(t.master_id)}` : ''}</span><span class="pill s-${esc(t.status)}">${esc(t.status.replace('_', ' '))}</span></div>
+      <div class="title">${esc(t.title)}</div>
+      ${t.detail ? `<div class="small-text">${esc(t.detail)}</div>` : ''}
+      ${t.acceptance ? `<div class="small-text"><b>Done when:</b> ${esc(t.acceptance)}</div>` : ''}
+      ${t.completion ? `<div class="rec"><b>Completed</b> ${ago(t.completion.completed_at)} · ${t.completion.attempts || 1} attempt(s) · +${t.completion.points} points<br>${esc(t.completion.summary)}
+        ${t.completion.tests ? `<br><span class="muted">Tests:</span> ${esc(t.completion.tests)}` : ''}
+        ${(t.completion.findings || []).length ? `<br><span class="muted">Findings:</span> ${esc(t.completion.findings.join(' · '))}` : ''}
+        ${(t.completion.errors || []).length ? `<br><span class="muted">Errors:</span> ${esc(t.completion.errors.join(' · '))}` : ''}
+        ${(t.completion.files || []).length ? `<br><span class="muted mono">${esc(t.completion.files.join(', '))}</span>` : ''}</div>` : ''}
+      ${t.status === 'proposed' ? `<div><button class="small" data-act="approve" data-target="${esc(t.id)}">Approve</button> <button class="small danger" data-act="decline" data-target="${esc(t.id)}">Decline</button></div>` : ''}
+    </div>`).join('')}</div>`;
+  }).join('') || '<div class="empty">No task lists yet.</div>';
+}
+
+// One delegated click handler. Data from the board or the files never becomes code:
+// it is only ever read back from data- attributes.
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.goto) { location.hash = b.dataset.goto; return; }
+  if (b.dataset.agent) { location.hash = `#/p/${route.project}/a/${encodeURIComponent(b.dataset.agent)}`; return; }
+  if (b.dataset.taskfilter) { taskFilter = b.dataset.taskfilter; renderAll(); return; }
+  if (b.dataset.boardfilter) { boardFilter = b.dataset.boardfilter; renderAll(); return; }
+  if (b.dataset.form) { openForm = b.dataset.form; renderAll(); $('formText')?.focus(); $('renameInput')?.focus(); return; }
+  if (b.dataset.cancel) { openForm = null; renderAll(); return; }
+  if (b.dataset.rename) {
+    try { await api(`/api/projects/${b.dataset.rename}/rename`, { name: $('renameInput').value }); openForm = null; refresh(); } catch (err) { showErr(err); }
+    return;
+  }
+  if (b.dataset.send) {
+    const note = $('formText')?.value || '';
+    if (b.dataset.send === 'decline') await act('decline', b.dataset.target, { note });
+    else await act('task-feedback', b.dataset.target, { value: b.dataset.send, note });
+    openForm = null; renderAll(); return;
+  }
+  if (b.dataset.act) {
+    const extra = {};
+    if (b.dataset.value) extra.value = b.dataset.value;
+    act(b.dataset.act, b.dataset.target, extra);
+  }
+});
+
+go();
+</script>
+</body>
+</html>

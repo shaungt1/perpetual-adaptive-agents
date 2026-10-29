@@ -1,0 +1,15 @@
+# Optional: run the NATS message-board server in Docker instead of letting start.sh run it.
+#   docker compose up -d      (in the perpetual-adaptive-agents folder)
+# start.sh finds NATS already listening on 127.0.0.1:4222 and uses it. Data is kept in the
+# named volume pa-nats-data. Without Docker, start.sh runs the NATS server program itself.
+services:
+  nats:
+    image: nats:2
+    command: ["-js", "-sd", "/data", "--server_name", "pa_local"]
+    ports:
+      - "127.0.0.1:4222:4222"
+    volumes:
+      - pa-nats-data:/data
+    restart: unless-stopped
+volumes:
+  pa-nats-data:

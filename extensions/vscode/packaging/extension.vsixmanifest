@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+  <Metadata>
+    <Identity Language="en-US" Id="evolution-agents" Version="0.4.0" Publisher="frontside" />
+    <DisplayName>Adaptive Agents</DisplayName>
+    <Description xml:space="preserve">Opens Adaptive Agents sessions (Claude Code, Codex, Copilot) inside VS Code.</Description>
+    <Tags>agents,chat,claude,codex,copilot</Tags>
+    <Categories>Other</Categories>
+    <Properties>
+      <Property Id="Microsoft.VisualStudioCode.Engine" Value="^1.100.0" />
+      <Property Id="Microsoft.VisualStudioCode.ExtensionDependencies" Value="" />
+    </Properties>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudioCode" />
+  </Installation>
+  <Dependencies />
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
+    <Asset Type="Microsoft.VisualStudio.Services.Content.Details" Path="extension/README.md" Addressable="true" />
+  </Assets>
+</PackageManifest>

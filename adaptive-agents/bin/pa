@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# pa: the Adaptive Agents tool, for this project.
+# It runs the `pa` command of the Perpetual Adaptive Agents service on this computer. Where
+# that service is (the perpetual-adaptive-agents folder) is read from, in order:
+#   1. the PA_REPO environment variable;
+#   2. [service] repo in this folder's config.toml (written when the project was registered);
+#   3. service.toml in the central folder (PA_HOME, default ~/.perpetual-adaptive-agents).
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PA_PAYLOAD="${PA_PAYLOAD:-$HERE}"
+REPO="${PA_REPO:-}"
+if [ -z "$REPO" ] && [ -f "$HERE/config.toml" ]; then
+  REPO="$(awk '/^\[service\]/{s=1;next} /^\[/{s=0} s && /^repo *=/{sub(/^repo *= *"/,""); sub(/".*$/,""); print; exit}' "$HERE/config.toml")"
+  HOMEV="$(awk '/^\[service\]/{s=1;next} /^\[/{s=0} s && /^home *=/{sub(/^home *= *"/,""); sub(/".*$/,""); print; exit}' "$HERE/config.toml")"
+  if [ -n "$HOMEV" ] && [ -z "${PA_HOME:-}" ]; then export PA_HOME="$HOMEV"; fi
+fi
+if [ -z "$REPO" ]; then
+  CENTRAL="${PA_HOME:-$HOME/.perpetual-adaptive-agents}"
+  if [ -f "$CENTRAL/service.toml" ]; then
+    REPO="$(sed -n 's/^repo *= *"\(.*\)"/\1/p' "$CENTRAL/service.toml" | head -n 1)"
+  fi
+fi
+if [ -z "$REPO" ] || [ ! -f "$REPO/core/cli.mjs" ]; then
+  echo "pa: cannot find the Perpetual Adaptive Agents service on this computer." >&2
+  echo "    Follow AGENT-SETUP.md in the perpetual-adaptive-agents folder (run its start.sh, then register this project)." >&2
+  exit 1
+fi
+exec node "$REPO/core/cli.mjs" "$@"
